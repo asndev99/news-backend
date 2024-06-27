@@ -4,6 +4,7 @@ const rootRouter = require("./Routes");
 const app = express();
 require("dotenv").config();
 
+//health check
 app.get("/", (req, res) => {
   return res.status(200).json({
     success: true,
@@ -11,7 +12,8 @@ app.get("/", (req, res) => {
   });
 });
 //middlewares
-app.use(express.json());
+app.use(express.json()); // To parse JSON payloads
+app.use(express.urlencoded({ extended: true }));
 app.use("/api", rootRouter);
 app.use(errorMiddleware);
 

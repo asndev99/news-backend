@@ -12,6 +12,16 @@ const registerSchema = z.object({
     .min(8, { message: "password must be atleast 8 characters long" }),
 });
 
+const signinSchema = z.object({
+  email: z
+    .string({ message: "email is required" })
+    .email({ message: "please enter valid email" }),
+
+  password: z
+    .string({ message: "password is required" })
+    .nonempty({ message: "password is required" }),
+});
 module.exports = {
   registerSchema,
+  signinSchema,
 };
