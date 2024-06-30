@@ -17,6 +17,9 @@ class NewsController {
       const skip = (page - 1) * limit;
       const [data, count] = await Promise.all([
         prisma.news.findMany({
+          where: {
+            deleted_at: false,
+          },
           skip,
           take: limit,
           include: {
@@ -30,7 +33,7 @@ class NewsController {
           },
         }),
 
-        prisma.news.count(),
+        prisma.news.count({ where: { deleted_at: false } }),
       ]);
       return res.status(200).json({
         success: true,
@@ -71,11 +74,112 @@ class NewsController {
     }
   }
 
-  static async show(req, res) {}
+  static async show(req, res, next) {
+    try {
+      const { id } = req.params;
+      const news = await prisma.news.findUnique({
+        where: {
+          id: Number(id),
+          deleted_at: false,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              Profile: true,
+            },
+          },
+        },
+      });
+      return res.status(200).json({
+        success: true,
+        data: news,
+        message: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 
-  static async update(req, res) {}
+  static async update(req, res, next) {
+    try {
+      const { id } = req.params;
+      const user = req.user;
 
-  static async destroy(req, res) {}
+      const news = await prisma.news.findUnique({
+        where: {
+          id: Number(id),
+          user: {
+            id: user.userId,
+          },
+        },
+      });
+      if (!news) {
+        return res.status(404).json({
+          success: false,
+          data: null,
+          message: "Record Not Found",
+        });
+      }
+      let updatedPayload = {
+        ...req.body,
+      };
+      if (req.file) {
+        updatedPayload.image = req.file.filename;
+      }
+      const updatedNews = await prisma.news.update({
+        where: {
+          id: news.id,
+        },
+        data: {
+          ...updatedPayload,
+        },
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: updatedNews,
+        message: "news updated successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async destroy(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { userId } = req.user;
+      const deletedNews = await prisma.news.updateMany({
+        where: {
+          id: Number(id),
+          deleted_at: false,
+          user: {
+            id: userId,
+          },
+        },
+        data: {
+          deleted_at: true,
+        },
+      });
+      console.log(deletedNews);
+      if (deletedNews.count !== 1) {
+        return res.status(404).json({
+          success: false,
+          data: null,
+          message: "Record Not Found To Delete",
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        data: null,
+        message: "Data Deleted Successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = NewsController;

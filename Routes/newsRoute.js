@@ -14,5 +14,13 @@ newsRouter.post(
   validateSchema(createNewsSchema),
   NewsController.store
 );
+newsRouter.get("/:id", NewsController.show);
+newsRouter.patch(
+  "/:id",
+  verifyToken,
+  upload.single("postImage"),
+  NewsController.update
+);
+newsRouter.delete("/:id", verifyToken, NewsController.destroy);
 
 module.exports = newsRouter;
