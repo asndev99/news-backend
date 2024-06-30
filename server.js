@@ -2,6 +2,8 @@ const express = require("express");
 const errorMiddleware = require("./Middlewares/errorMiddleware");
 const rootRouter = require("./Routes");
 const app = express();
+const cors = require("cors");
+const helmet = require("helmet");
 require("dotenv").config();
 
 //health check
@@ -14,6 +16,8 @@ app.get("/", (req, res) => {
 //middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // To parse JSON payloads
+app.use(cors());
+app.use(helmet());
 app.use("/api", rootRouter);
 app.use(errorMiddleware);
 
