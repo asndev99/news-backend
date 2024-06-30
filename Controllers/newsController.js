@@ -15,23 +15,30 @@ class NewsController {
       }
 
       const skip = (page - 1) * limit;
-
-      const news = await prisma.news.findMany({
-        skip,
-        take: limit,
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              Profile: true,
+      const [data, count] = await Promise.all([
+        prisma.news.findMany({
+          skip,
+          take: limit,
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                Profile: true,
+              },
             },
           },
-        },
-      });
+        }),
+
+        prisma.news.count(),
+      ]);
       return res.status(200).json({
         success: true,
-        data: news,
+        data,
+        metadata: {
+          totalPages: Math.ceil(count / limit),
+          currentPage: page,
+        },
         message: "",
       });
     } catch (error) {
