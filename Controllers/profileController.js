@@ -16,7 +16,6 @@ class ProfileController {
 
   static async update(req, res, next) {
     try {
-      console.log(req.file);
       if (!req.file) {
         throw new Error("Please select file to upload");
       }

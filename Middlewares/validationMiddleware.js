@@ -14,6 +14,15 @@ const formatZodErrors = (zodError) => {
 
 const validateSchema = (schema) => {
   return (req, res, next) => {
+    console.log(req.file);
+    let dataToValidate;
+    if (req.is("multipart/form-data")) {
+      dataToValidate = Object.fromEntries(
+        Object.entries(req.body).map(([key, value]) => [key, value])
+      );
+    } else if (req.is("application/json")) {
+      dataToValidate = req.body;
+    }
     try {
       schema.parse(req.body);
       next();
