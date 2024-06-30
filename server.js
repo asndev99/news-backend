@@ -4,6 +4,7 @@ const rootRouter = require("./Routes");
 const app = express();
 const cors = require("cors");
 const helmet = require("helmet");
+const limiter = require("./config/rateLimitting");
 require("dotenv").config();
 
 //health check
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // To parse JSON payloads
 app.use(cors());
 app.use(helmet());
+app.use(limiter);
 app.use("/api", rootRouter);
 app.use(errorMiddleware);
 
